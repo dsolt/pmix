@@ -122,7 +122,7 @@ pmix_status_t pmix_server_get(pmix_buffer_t *buf,
     pmix_namespace_t *ns, *nptr;
     pmix_dmdx_local_t *lcd;
     pmix_dmdx_request_t *req;
-    bool local;
+    bool local = false;
     bool localonly = false;
     bool diffnspace = false;
     bool refresh_cache = false;
@@ -390,6 +390,7 @@ pmix_status_t pmix_server_get(pmix_buffer_t *buf,
                 cb.info = NULL;
                 cb.ninfo = 0;
                 PMIX_DESTRUCT(&cb);
+                goto dave;
                 return rc;
             }
             cb.info = NULL;
@@ -424,6 +425,12 @@ pmix_status_t pmix_server_get(pmix_buffer_t *buf,
         /* return success so the server doesn't duplicate
          * the release of cbdata */
         return PMIX_SUCCESS;
+    }
+
+dave:
+    if (nptr->nprocs <= 0) {
+        nptr->all_registered = true;
+        nptr->nlocalprocs = 0;
     }
 
     /* We have to wait for all local clients to be registered before
